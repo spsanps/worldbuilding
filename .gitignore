@@ -1,3 +1,8 @@
 *.log
 *.json
 data/
+keys/
+*.key*
+*__pycache__*
+*__pycache__/*
+*.pyc
