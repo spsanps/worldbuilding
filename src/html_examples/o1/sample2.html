@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Wiki - Eldoria</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Horizontal Timeline */
+        .timeline-container {
+            position: relative;
+            margin-bottom: 40px;
+            padding: 20px 0;
+            border-bottom: 2px solid #eaeaea;
+        }
+
+        .timeline {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #eaeaea;
+            z-index: 1;
+        }
+
+        .timeline-item {
+            position: relative;
+            flex: 0 0 auto;
+            width: 120px;
+            text-align: center;
+            margin-right: 40px;
+            cursor: pointer;
+        }
+
+        .timeline-item:last-child {
+            margin-right: 0;
+        }
+
+        .timeline-item .dot {
+            width: 20px;
+            height: 20px;
+            background: #6c63ff;
+            border-radius: 50%;
+            margin: 0 auto;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .timeline-item .dot::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-size: 0.8em;
+            z-index: 10;
+        }
+
+        .timeline-item:hover .dot::after {
+            opacity: 1;
+        }
+
+        .timeline-item.selected .dot {
+            background: #5551d6;
+            transform: scale(1.2);
+        }
+
+        .timeline-item .chapter-label {
+            margin-top: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* Wiki Section */
+        .wiki-section {
+            width: 25%;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .wiki-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            color: #333;
+            text-align: center;
+        }
+
+        .wiki-section ul {
+            list-style: none;
+        }
+
+        .wiki-section li {
+            margin-bottom: 10px;
+        }
+
+        .wiki-section a {
+            text-decoration: none;
+            color: #6c63ff;
+            transition: color 0.3s;
+        }
+
+        .wiki-section a:hover {
+            color: #555;
+        }
+
+        /* Wiki Content */
+        .wiki-content {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .wiki-content h2 {
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .wiki-content p, .wiki-content ul {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .wiki-content ul {
+            padding-left: 20px;
+        }
+
+        .wiki-content li {
+            margin-bottom: 10px;
+        }
+
+        /* Writing Editor */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 400px;
+            max-height: 600px;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #6c63ff;
+            text-align: center;
+        }
+
+        .editor {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+            resize: none;
+            font-family: inherit;
+            font-size: 1em;
+            overflow-y: auto;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            width: 25%;
+            max-width: 300px;
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .chat-header {
+            background: #6c63ff;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+        }
+
+        .chat-message.user {
+            text-align: right;
+        }
+
+        .chat-message.bot {
+            text-align: left;
+        }
+
+        .chat-message.user .message {
+            display: inline-block;
+            background: #6c63ff;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 16px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chat-message.bot .message {
+            display: inline-block;
+            background: #eaeaea;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 16px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 0;
+            font-size: 1em;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            border: none;
+            background: #6c63ff;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chat-input button:hover {
+            background: #5551d6;
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .wiki-section, .chat-container {
+                width: 100%;
+                max-width: none;
+            }
+
+            .chat-container {
+                margin-top: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .timeline-item {
+                width: 80px;
+                margin-right: 20px;
+            }
+
+            .wiki-section h2, .wiki-content h2, .editor-header, .chat-header {
+                font-size: 1.2em;
+            }
+
+            .editor {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Horizontal Timeline -->
+        <div class="timeline-container">
+            <div class="timeline">
+                <!-- Chapter 1 -->
+                <div class="timeline-item" data-chapter="1">
+                    <div class="dot" data-tooltip="Chapter 1: The Awakening - Scene 1: The Celestial Alignment"></div>
+                    <div class="chapter-label">Chapter 1</div>
+                </div>
+                <div class="timeline-item" data-chapter="1">
+                    <div class="dot" data-tooltip="Chapter 1: The Awakening - Scene 2: The First Light"></div>
+                    <div class="chapter-label">Chapter 1</div>
+                </div>
+                <!-- Chapter 2 -->
+                <div class="timeline-item" data-chapter="2">
+                    <div class="dot" data-tooltip="Chapter 2: Shadows Rising - Scene 1: The First Omen"></div>
+                    <div class="chapter-label">Chapter 2</div>
+                </div>
+                <div class="timeline-item" data-chapter="2">
+                    <div class="dot" data-tooltip="Chapter 2: Shadows Rising - Scene 2: The Dark Veil"></div>
+                    <div class="chapter-label">Chapter 2</div>
+                </div>
+                <!-- Chapter 3 -->
+                <div class="timeline-item" data-chapter="3">
+                    <div class="dot" data-tooltip="Chapter 3: The Great Journey - Scene 1: Departure from Luminalia"></div>
+                    <div class="chapter-label">Chapter 3</div>
+                </div>
+                <div class="timeline-item" data-chapter="3">
+                    <div class="dot" data-tooltip="Chapter 3: The Great Journey - Scene 2: Crossing the Starfall Bridge"></div>
+                    <div class="chapter-label">Chapter 3</div>
+                </div>
+                <!-- Chapter 4 -->
+                <div class="timeline-item" data-chapter="4">
+                    <div class="dot" data-tooltip="Chapter 4: Trials of the Starblade - Scene 1: The Labyrinth of Light"></div>
+                    <div class="chapter-label">Chapter 4</div>
+                </div>
+                <div class="timeline-item" data-chapter="4">
+                    <div class="dot" data-tooltip="Chapter 4: Trials of the Starblade - Scene 2: The Celestial Forge"></div>
+                    <div class="chapter-label">Chapter 4</div>
+                </div>
+                <!-- Add more timeline items as needed -->
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Wiki Section -->
+            <div class="wiki-section">
+                <h2>World Wikis</h2>
+                <ul id="wiki-list">
+                    <!-- Dynamic Wiki Items -->
+                    <!-- Example Static Items -->
+                    <li><a href="#" data-wiki="Eldoria Starweaver">Eldoria Starweaver</a></li>
+                    <li><a href="#" data-wiki="Orion Brightshield">Orion Brightshield</a></li>
+                    <li><a href="#" data-wiki="Lyra Moonshadow">Lyra Moonshadow</a></li>
+                    <li><a href="#" data-wiki="Celestial Guardians">Celestial Guardians</a></li>
+                    <li><a href="#" data-wiki="Shadow Eclipse">Shadow Eclipse</a></li>
+                    <li><a href="#" data-wiki="Luminalia">Luminalia</a></li>
+                    <!-- Add more wiki links as needed -->
+                </ul>
+            </div>
+
+            <!-- Writing Editor -->
+            <div class="editor-container">
+                <div class="editor-header">Write Your Story</div>
+                <textarea class="editor" placeholder="Start writing your story here..."></textarea>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="chat-container">
+                <div class="chat-header">Eldoria Chat</div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-message bot">
+                        <div class="message">Welcome to the Eldoria Chat! How can I assist you today?</div>
+                    </div>
+                    <!-- Example Messages -->
+                    <div class="chat-message user">
+                        <div class="message">Tell me about Eldoria Starweaver.</div>
+                    </div>
+                    <div class="chat-message bot">
+                        <div class="message">Eldoria Starweaver is the High Seer of the Astra Council, known for her mastery of celestial magic and leadership in the Celestial Guardians.</div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type your message...">
+                    <button id="chat-send">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wiki Content Modal (Hidden by Default) -->
+    <div id="wiki-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:20px; border-radius:8px; width:80%; max-width:800px; max-height:80%; overflow-y:auto; position:relative;">
+            <span id="close-modal" style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:1.5em;">&times;</span>
+            <div id="wiki-content-modal">
+                <!-- Dynamic Wiki Content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for Interactive Features
+
+        // Timeline and Wiki Interaction
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        const wikiList = document.getElementById('wiki-list');
+        const wikiContentModal = document.getElementById('wiki-content-modal');
+        const wikiModal = document.getElementById('wiki-modal');
+        const closeModal = document.getElementById('close-modal');
+        const wikiLinks = document.querySelectorAll('.wiki-section a');
+
+        // Sample Wiki Data
+        const wikiData = {
+            "Eldoria Starweaver": {
+                "title": "Eldoria Starweaver",
+                "subtitle": "Guardian of the Celestial Realms",
+                "image": "https://via.placeholder.com/300x400.png?text=Eldoria+Starweaver",
+                "content": `
+                    <h3>Biography</h3>
+                    <p>Eldoria Starweaver was born under the rare Celestial Alignment, granting her innate affinity with the stars and celestial magic. From a young age, she exhibited extraordinary abilities, mastering the art of star weaving, a sacred practice among the Luminarian. Her dedication and prowess led her to ascend as the High Seer of the Astra Council, where she plays a pivotal role in maintaining the balance between the celestial realms and the mortal world.</p>
+                    
+                    <h3>Abilities</h3>
+                    <p>Eldoria possesses a wide range of magical abilities centered around celestial energy. She can manipulate starlight to create protective barriers, heal allies, and unleash devastating energy blasts upon her foes. Her signature ability, <strong>Stellar Convergence</strong>, allows her to summon meteoric forces to reshape the battlefield. Additionally, her deep connection with the stars grants her prophetic visions, aiding her in strategic planning and decision-making.</p>
+                    
+                    <h3>Appearance</h3>
+                    <p>Eldoria stands tall with an ethereal presence. Her luminescent skin glows softly under moonlight, and her long, flowing hair shimmers with specks resembling distant stars. She adorns herself with celestial-themed attire, including robes embroidered with constellations and a cloak that seems to ripple like the night sky. Her eyes are a deep violet, reflecting the vastness of the cosmos.</p>
+                    
+                    <h3>Relationships</h3>
+                    <p>Eldoria maintains strong bonds with fellow members of the Celestial Guardians, including her trusted lieutenant, Orion Brightshield. She shares a mentor-mentee relationship with the young sorceress, Lyra Moonshadow, whom she is training to become the next High Seer. Despite her busy duties, Eldoria is known for her compassionate nature, earning the respect and admiration of both allies and adversaries.</p>
+                    
+                    <h3>Notable Achievements</h3>
+                    <ul>
+                        <li>Unified the Celestial Realms during the Great Starfall War.</li>
+                        <li>Discovered the lost Celestial Codex, unlocking ancient star magic.</li>
+                        <li>Led the defense against the Shadow Eclipse invasion.</li>
+                    </ul>
+                `
+            },
+            "Orion Brightshield": {
+                "title": "Orion Brightshield",
+                "subtitle": "Commander of the Celestial Guardians",
+                "image": "https://via.placeholder.com/300x400.png?text=Orion+Brightshield",
+                "content": `
+                    <h3>Biography</h3>
+                    <p>Orion Brightshield, a seasoned warrior, has dedicated his life to protecting the Celestial Realms. With unparalleled skill in combat and strategic planning, he serves as the Commander of the Celestial Guardians. His unwavering loyalty and courage have earned him the respect of allies and the fear of adversaries.</p>
+                    
+                    <h3>Abilities</h3>
+                    <p>Orion wields the mighty Lighthammer, a weapon imbued with celestial energy. He is adept at defensive magic, creating shields that can withstand the harshest of attacks. His leadership skills enable him to inspire and coordinate his troops effectively during battles.</p>
+                    
+                    <h3>Appearance</h3>
+                    <p>Orion is a towering figure with a commanding presence. He wears ornate armor adorned with celestial motifs and carries the Lighthammer at his side. His piercing blue eyes reflect his determination, and his short-cropped hair is always impeccably maintained.</p>
+                    
+                    <h3>Relationships</h3>
+                    <p>Orion shares a deep bond with Eldoria Starweaver, serving as her trusted second-in-command. He mentors young warriors within the Celestial Guardians and maintains strong alliances with neighboring realms to ensure mutual protection.</p>
+                    
+                    <h3>Notable Achievements</h3>
+                    <ul>
+                        <li>Led the Celestial Guardians to victory in the Battle of Starfall Ridge.</li>
+                        <li>Secured alliances with the neighboring realm of Luminalia.</li>
+                        <li>Developed advanced defensive strategies that have become standard within the Guardians.</li>
+                    </ul>
+                `
+            },
+            // Add more wiki entries as needed
+        };
+
+        // Function to highlight selected timeline item
+        function highlightTimeline(item) {
+            timelineItems.forEach(ti => ti.classList.remove('selected'));
+            item.classList.add('selected');
+        }
+
+        // Function to update wiki list based on chapter
+        function updateWikiList(chapter) {
+            // For simplicity, we'll filter wiki items based on chapter number
+            // In a real scenario, you might have a more complex mapping
+            const wikiListItems = wikiList.querySelectorAll('li');
+            wikiListItems.forEach(li => {
+                const wikiName = li.querySelector('a').getAttribute('data-wiki');
+                // Simple example: show all wikis for chapters 1-4
+                if (chapter >=1 && chapter <=4) {
+                    li.style.display = 'block';
+                } else {
+                    li.style.display = 'none';
+                }
+            });
+        }
+
+        // Add click event listeners to timeline items
+        timelineItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const chapter = item.getAttribute('data-chapter');
+                highlightTimeline(item);
+                updateWikiList(chapter);
+            });
+        });
+
+        // Wiki Modal Functionality
+        wikiLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const wikiName = link.getAttribute('data-wiki');
+                if (wikiData[wikiName]) {
+                    const data = wikiData[wikiName];
+                    wikiContentModal.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <h4>${data.subtitle}</h4>
+                        <img src="${data.image}" alt="${data.title}" style="width:100%; border-radius:8px; margin-bottom:15px;">
+                        ${data.content}
+                    `;
+                    wikiModal.style.display = 'flex';
+                }
+            });
+        });
+
+        // Close Modal
+        closeModal.addEventListener('click', () => {
+            wikiModal.style.display = 'none';
+        });
+
+        // Close Modal when clicking outside the content
+        window.addEventListener('click', (e) => {
+            if (e.target == wikiModal) {
+                wikiModal.style.display = 'none';
+            }
+        });
+
+        // Chat Functionality
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatSend.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message !== '') {
+                // User Message
+                const userMessage = document.createElement('div');
+                userMessage.classList.add('chat-message', 'user');
+                userMessage.innerHTML = `<div class="message">${message}</div>`;
+                chatMessages.appendChild(userMessage);
+
+                // Bot Response (Placeholder)
+                const botResponse = document.createElement('div');
+                botResponse.classList.add('chat-message', 'bot');
+                botResponse.innerHTML = `<div class="message">This is a placeholder response. Implement AI interactions here.</div>`;
+                chatMessages.appendChild(botResponse);
+
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Clear input
+                chatInput.value = '';
+            }
+        });
+
+        // Allow sending message with Enter key
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                chatSend.click();
+            }
+        });
+
+    </script>
+</body>
+</html>

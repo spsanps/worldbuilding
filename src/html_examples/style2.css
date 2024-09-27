@@ -1,0 +1,123 @@
+
+body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+    background-color: #0a0a0a;
+}
+.container {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+nav {
+    width: 176px;
+    padding: 20px;
+    background-color: #151515;
+    border-right: 1px solid #333;
+}
+main {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #1a1a1a;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+    min-height: 100vh;
+}
+h1, h2, h3, h4 {
+    font-family: 'Exo 2', 'Roboto', sans-serif;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    color: #00ccff;
+}
+h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+nav ul li {
+    margin-bottom: 5px;
+}
+a {
+    color: #00ccff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+    color: #ff00cc;
+}
+.toc {
+    background-color: #151515;
+    border: 1px solid #333;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+.toc h2 {
+    font-size: 18px;
+    margin-top: 0;
+}
+.toc ul {
+    margin: 0;
+    padding-left: 20px;
+}
+.image-container {
+    margin: 0 0 20px 0;
+    padding: 3px;
+    background-color: #151515;
+    border: 1px solid #333;
+    font-size: 0.9em;
+    text-align: center;
+}
+.image-container img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+.image-caption {
+    margin-top: 5px;
+    color: #888;
+}
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+}
+.main-content {
+    grid-column: 1;
+}
+.quick-facts {
+    grid-column: 2;
+    background-color: #151515;
+    border: 1px solid #333;
+    padding: 15px;
+    font-size: 0.9em;
+    align-self: start;
+}
+.quick-facts h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #333;
+}
+.quick-facts table {
+    width: 100%;
+}
+.quick-facts th {
+    text-align: left;
+    padding-right: 10px;
+    vertical-align: top;
+    color: #00ccff;
+}
+.warning {
+    background-color: #330000;
+    border: 1px solid #660000;
+    color: #ff6666;
+    padding: 10px;
+    margin-top: 20px;
+    font-style: italic;
+}
